@@ -1,0 +1,16 @@
+{
+  // Deployed by Cloudflare Workers Builds: build `npm run build`, deploy `npx wrangler deploy`.
+  "name": "gokitebaja-site",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/img/*"]
+  },
+  "r2_buckets": [
+    { "binding": "PHOTOS", "bucket_name": "gokitebaja-photos" }
+  ],
+  "observability": { "enabled": true }
+}

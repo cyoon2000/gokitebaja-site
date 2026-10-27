@@ -1,8 +1,0 @@
-# Cloudflare Pages config. Photos live in R2 and are served at /img/* by functions/img/[[path]].js
-name = "gokitebaja-site"
-pages_build_output_dir = "./dist"
-compatibility_date = "2026-10-01"
-
-[[r2_buckets]]
-binding = "PHOTOS"
-bucket_name = "gokitebaja-photos"
