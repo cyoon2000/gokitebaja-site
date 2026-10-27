@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import PlaceRow from '../../components/PlaceRow.astro';
+import { getPlaces, placesByTag, TAGS, tagPlural, GROUPS } from '../../lib/site';
+
+export async function getStaticPaths() {
+  return Object.keys(TAGS).map((tag) => ({ params: { tag } }));
+}
+const { tag } = Astro.params;
+const places = await getPlaces();
+const list = placesByTag(places, tag!);
+const group = GROUPS.find((g) => g.tags.includes(tag!));
+const siblings = group?.tags.filter((t) => t !== tag) ?? [];
+---
+<Base title={`${tagPlural(tag!)} in La Ventana`} description={`${tagPlural(tag!)} in La Ventana, Baja California Sur: ${list.map((p) => p.data.title).join(', ')}.`}>
+  <div class="wrap">
+    <p class="crumbs"><a href="/info/">Town guide</a>{group && <>, {group.title}</>}</p>
+    <h1>{tagPlural(tag!)}</h1>
+    {siblings.length > 0 && (
+      <p>Also in {group!.title.toLowerCase()}: {siblings.map((t, i) => <>{i > 0 && ', '}<a href={`/tag/${t}/`}>{tagPlural(t).toLowerCase()}</a></>)}</p>
+    )}
+    {list.length ? (
+      <ul class="rows two-col">{list.map((p) => <PlaceRow place={p} />)}</ul>
+    ) : (
+      <p>Nothing listed here yet. Know a good one? Email <a href="mailto:gokitebaja@gmail.com">gokitebaja@gmail.com</a>.</p>
+    )}
+  </div>
+</Base>

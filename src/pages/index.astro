@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+import Wind from '../components/Wind.astro';
+import PlaceRow from '../components/PlaceRow.astro';
+import { getPlaces, placesByTag, GROUPS, tagPlural } from '../lib/site';
+const places = await getPlaces();
+const schools = placesByTag(places, 'kite-school');
+const eat = placesByTag(places, 'hangout').slice(0, 8);
+---
+<Base>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Is it blowing in La Ventana?</h1>
+        <p class="lede">From November to March the north wind fills Ventana Bay most afternoons. Check the next three days, then find a school, a taco and a bed in town.</p>
+        <Wind days={3} />
+        <p style="margin-top:12px"><a href="/wind/">Seven-day forecast, water temperature and sunset</a></p>
+      </div>
+      <figure>
+        <img src="/img/gokitebaja/image-gallery/olga_air_9624.jpg" alt="A kiter jumping above Ventana Bay with the Sierra de la Laguna behind" width="707" height="446" fetchpriority="high" />
+        <figcaption>Ventana Bay. Photo by Olga Shmaidenko.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head"><h2>Around town</h2><a href="/info/">Full town guide</a></div>
+      <div class="groups">
+        {GROUPS.map((g) => (
+          <div class="group">
+            <h3>{g.title}</h3>
+            <ul>
+              {g.tags.map((t) => (
+                <li><a href={`/tag/${t}/`}>{tagPlural(t)}</a><span>{placesByTag(places, t).length}</span></li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two-col">
+      <div>
+        <div class="section-head"><h2>Kite schools</h2><a href="/tag/kite-school/">All {schools.length}</a></div>
+        <ul class="rows">{schools.map((p) => <PlaceRow place={p} />)}</ul>
+      </div>
+      <div>
+        <div class="section-head"><h2>Eat & drink</h2><a href="/tag/hangout/">All {placesByTag(places, 'hangout').length}</a></div>
+        <ul class="rows">{eat.map((p) => <PlaceRow place={p} />)}</ul>
+      </div>
+    </div>
+  </section>
+</Base>

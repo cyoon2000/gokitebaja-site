@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import Lightbox from '../components/Lightbox.astro';
+import photos from '../data/photos.json';
+const alts: Record<string, string> = {
+  olga_air_0461: 'Kiter boosting a jump over turquoise water',
+  olga_air_9624: 'Kiter in the air with the mountains behind',
+  olga_kite_9525: 'Kites laid out on the beach under a palm',
+  olga_kite_9783: 'Rows of colorful kites drying on the sand',
+  olga_nature_7963: 'Dry desert brush and cardón cactus on the shore',
+  olga_nature_8295: 'Cactus silhouettes against a bright sky',
+  olga_nature_9577: 'Pelicans on the rocks at the water’s edge',
+  olga_other_7622: 'Rows of trucker caps in a beach shop',
+  olga_ppl_7704: 'Shop front on the main road with the kite school signs',
+  olga_ppl_8169: 'Yoga silhouette at sunset',
+  olga_ppl_9642: 'Two kiters getting ready on the beach',
+};
+---
+<Base title="Photos" description="La Ventana in pictures: kiting, desert and town, by Olga Shmaidenko.">
+  <div class="wrap">
+    <h1>La Ventana in pictures</h1>
+    <p>Photos by <a href="http://riverflowsthroughit.com/">Olga Shmaidenko</a>. More of the town, beaches and places to stay are in the <a href="/book/">full photo archive</a>.</p>
+    <div class="masonry" data-gallery>
+      {photos.gallery.map((p) => (
+        <a href={p.full}><img src={p.full} alt={alts[p.name] ?? 'La Ventana'} width={p.w} height={p.h} loading="lazy" /></a>
+      ))}
+    </div>
+  </div>
+  <Lightbox />
+</Base>

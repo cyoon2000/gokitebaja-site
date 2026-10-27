@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPlaces, placesByTag, GROUPS, tagPlural } from '../lib/site';
+const places = await getPlaces();
+---
+<Base title="Town guide" description="Everything in La Ventana by category: kite schools, restaurants, coffee, hotels, yoga, groceries, gas and ATMs.">
+  <div class="wrap">
+    <p class="crumbs">La Ventana, Baja California Sur</p>
+    <h1>Town guide</h1>
+    <p class="prose">Every place we list, by what you need. New here? Start with <a href="/plan/">planning your trip</a> and the <a href="/wind/">wind forecast</a>.</p>
+    {GROUPS.map((g) => (
+      <section class="section" style="padding-top:32px">
+        <div class="section-head"><h2>{g.title}</h2></div>
+        <div class="groups">
+          {g.tags.map((t) => {
+            const list = placesByTag(places, t);
+            return (
+              <div class="group">
+                <h3><a href={`/tag/${t}/`}>{tagPlural(t)}</a></h3>
+                <ul>{list.map((p) => <li><a href={`/${p.data.slug}/`}>{p.data.title}</a></li>)}</ul>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ))}
+    <section class="section" style="padding-top:32px">
+      <div class="section-head"><h2>Events</h2></div>
+      <p class="prose">Contests, clinics and the weekly market are on the <a href="/events/">events page</a>.</p>
+    </section>
+  </div>
+</Base>

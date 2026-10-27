@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import Wind from '../components/Wind.astro';
+---
+<Base title="Wind forecast for La Ventana" description="Hourly wind speed, gusts and direction for Ventana Bay over the next seven days, plus water temperature and sunset.">
+  <div class="wrap">
+    <p class="crumbs">Ventana Bay, 24.05°N 109.99°W</p>
+    <h1>Wind in La Ventana</h1>
+    <p class="prose">Hourly model forecast for the bay, in knots. Taller pale bars are gusts; faded bars are night hours. Models tend to under-read the afternoon thermal, so a 15 kn forecast on a sunny El Norte day often kites bigger.</p>
+    <Wind days={7} detail />
+    <section class="section prose">
+      <h2>Reading La Ventana wind</h2>
+      <p>The season runs November to March, when El Norte fronts push down the Sea of Cortez and the desert thermal adds to them in the afternoon. Sessions usually start around midday and build into late afternoon. The wind is side-onshore from the north-east along the main beach.</p>
+      <p>Spring and early summer bring lighter, less predictable days; summer is hot and mostly calm.</p>
+    </section>
+  </div>
+</Base>

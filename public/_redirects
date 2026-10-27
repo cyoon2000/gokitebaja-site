@@ -1,0 +1,13 @@
+# Retired booking pages (booking was discontinued)
+/sleep/            /book/   301
+/sleep-detail/     /book/   301
+/unit-detail/      /book/   301
+/calendar/         /book/   301
+/book-bobbie-shirley/ /book/ 301
+/vacation/         /book/   301
+/contact/          /info/   301
+# Old Ghost listing pagination and author archives
+/page/*            /        301
+/author/*          /        301
+/tag/:tag/page/*   /tag/:tag/ 301
+/rss/              /sitemap-index.xml 301

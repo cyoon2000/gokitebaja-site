@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://gokitebaja.com/sitemap-index.xml

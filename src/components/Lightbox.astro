@@ -1,0 +1,31 @@
+---
+// Progressive lightbox: links work without JS; with JS, opens a <dialog>.
+---
+<dialog class="lightbox" data-lightbox aria-label="Photo viewer">
+  <img alt="" />
+  <div class="lb-bar">
+    <button type="button" data-prev>Previous</button>
+    <button type="button" data-close>Close</button>
+    <button type="button" data-next>Next</button>
+  </div>
+</dialog>
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-lightbox]')!;
+  const img = dlg.querySelector('img')!;
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-gallery] a')];
+  let at = 0;
+  const show = (i: number) => {
+    at = (i + links.length) % links.length;
+    img.src = links[at].href;
+    img.alt = links[at].querySelector('img')?.alt ?? '';
+  };
+  links.forEach((a, i) => a.addEventListener('click', (e) => { e.preventDefault(); show(i); dlg.showModal(); }));
+  dlg.querySelector('[data-prev]')!.addEventListener('click', () => show(at - 1));
+  dlg.querySelector('[data-next]')!.addEventListener('click', () => show(at + 1));
+  dlg.querySelector('[data-close]')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') show(at - 1);
+    if (e.key === 'ArrowRight') show(at + 1);
+  });
+</script>

@@ -1,0 +1,64 @@
+---
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/atkinson-hyperlegible/400.css';
+import '@fontsource/atkinson-hyperlegible/700.css';
+import '../styles/global.css';
+import { SITE } from '../lib/site';
+
+interface Props { title?: string; description?: string; image?: string; }
+const { title, description = 'Wind forecast, kite schools, places to eat and stay, and practical info for La Ventana, Baja California Sur.', image } = Astro.props;
+const fullTitle = title ? `${title} | ${SITE.name}` : `${SITE.name}: kitesurfing in La Ventana, Baja`;
+const path = Astro.url.pathname;
+const nav = [
+  ['/wind/', 'Wind'],
+  ['/tag/kite-school/', 'Kite schools'],
+  ['/tag/hangout/', 'Eat & drink'],
+  ['/info/', 'Town guide'],
+  ['/plan/', 'Plan a trip'],
+  ['/photos/', 'Photos'],
+];
+const ogImage = new URL(image ?? '/img/gokitebaja/image-gallery/olga_kite_9525.jpg', Astro.site).href;
+const canonical = new URL(path, Astro.site).href;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f2f6f5" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head">
+      <div class="wrap">
+        <a class="brand" href="/"><b>GoKiteBaja</b><span>La Ventana, BCS</span></a>
+        <nav class="nav" aria-label="Main">
+          {nav.map(([href, label]) => (
+            <a href={href} aria-current={path.startsWith(href) ? 'page' : undefined}>{label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-foot">
+      <div class="wrap">
+        <p>GoKiteBaja is an independent local guide to La Ventana. Spotted something out of date? Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+        <p>Forecast data by <a href="https://open-meteo.com/">Open-Meteo.com</a> (CC BY 4.0). Gallery photos by <a href="http://riverflowsthroughit.com/">Olga Shmaidenko</a>.</p>
+      </div>
+    </footer>
+  </body>
+</html>

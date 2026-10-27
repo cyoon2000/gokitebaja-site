@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { tagLabel } from '../lib/site';
+
+export async function getStaticPaths() {
+  const places = await getCollection('places');
+  const pages = await getCollection('pages');
+  return [
+    ...places.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry, kind: 'place' as const } })),
+    ...pages.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry, kind: 'page' as const } })),
+  ];
+}
+const { entry, kind } = Astro.props;
+const { Content } = await render(entry);
+const tags: string[] = kind === 'place' ? (entry.data as any).tags : [];
+const status = kind === 'place' ? (entry.data as any).status : null;
+const image = kind === 'place' ? (entry.data as any).image : undefined;
+---
+<Base title={entry.data.title} image={image ? image.replace('/image-256/', '/image/') : undefined}
+  description={kind === 'place' ? `${entry.data.title} in La Ventana, Baja California Sur: ${tags.map(tagLabel).join(', ').toLowerCase()}, contact details and map.` : undefined}>
+  <div class="wrap article">
+    {kind === 'place' && (
+      <p class="crumbs">
+        {tags.map((t, i) => <>{i > 0 && ', '}<a href={`/tag/${t}/`}>{tagLabel(t)}</a></>)}
+      </p>
+    )}
+    <header><h1>{entry.data.title}</h1></header>
+    {status === 'unverified' && (
+      <p class="note">This listing was last checked a few seasons ago. Hours, prices and phone numbers may have changed, so confirm before you go.</p>
+    )}
+    <div class="prose"><Content /></div>
+  </div>
+</Base>

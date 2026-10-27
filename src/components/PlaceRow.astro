@@ -1,0 +1,15 @@
+---
+import { firstImage, excerpt, tagLabel, type Place } from '../lib/site';
+interface Props { place: Place; }
+const { place } = Astro.props;
+const img = firstImage(place);
+const kinds = place.data.tags.map(tagLabel).join(', ');
+---
+<li class="row-item">
+  {img ? <img src={img} alt="" loading="lazy" width="112" height="76" /> : <div class="ph" aria-hidden="true"></div>}
+  <div>
+    <h3><a href={`/${place.data.slug}/`}>{place.data.title}</a></h3>
+    <div class="kinds">{kinds}</div>
+    {excerpt(place) && <p>{excerpt(place)}</p>}
+  </div>
+</li>

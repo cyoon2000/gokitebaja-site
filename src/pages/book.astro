@@ -1,0 +1,18 @@
+---
+// /book/ used to hold the booking form. Booking is retired; the URL now shows the photo archive.
+import Base from '../layouts/Base.astro';
+import Lightbox from '../components/Lightbox.astro';
+import photos from '../data/photos.json';
+---
+<Base title="Photo archive" description={`${photos.numbered.length} photos of La Ventana's beaches, places to stay, restaurants and shops.`}>
+  <div class="wrap">
+    <h1>Photo archive</h1>
+    <p class="prose">Online booking has closed. These {photos.numbered.length} photos of beaches, rooms, restaurants and shops in La Ventana stay up for anyone choosing where to stay; contact places directly from the <a href="/tag/hotel/">hotels</a> and <a href="/tag/vacation-rental/">vacation rentals</a> pages.</p>
+    <div class="thumbs" data-gallery>
+      {photos.numbered.map((p) => (
+        <a href={p.full}><img src={p.thumb} alt={`La Ventana photo ${p.n}`} loading="lazy" width="256" height="171" /></a>
+      ))}
+    </div>
+  </div>
+  <Lightbox />
+</Base>

@@ -1,0 +1,100 @@
+---
+// Live wind for Ventana Bay, fetched in the browser from Open-Meteo (free, no key).
+// days=3 on the home page; the wind page also shows daily cards, water and sun.
+import { SITE } from '../lib/site';
+interface Props { days?: number; detail?: boolean; }
+const { days = 3, detail = false } = Astro.props;
+---
+<section class="wind" data-wind data-days={days} data-detail={detail ? '1' : ''} data-lat={SITE.lat} data-lon={SITE.lon} data-tz={SITE.tz} aria-live="polite">
+  <div class="wind-head">
+    <div class="wind-now" data-now>--<small>kn</small></div>
+    <div class="wind-meta" data-meta>Loading the forecast for Ventana Bay…</div>
+  </div>
+  <div class="strip" data-strip role="img" aria-label="Hourly wind forecast"></div>
+  <div class="strip-days" data-days-row></div>
+  <div class="legend" aria-hidden="true">
+    <span style="--c:var(--w0)">under 10 kn</span>
+    <span style="--c:var(--w1)">10–14</span>
+    <span style="--c:var(--w2)">15–19 big kite</span>
+    <span style="--c:var(--w3)">20–24 the classic</span>
+    <span style="--c:var(--w4)">25–29 small kite</span>
+    <span style="--c:var(--w5)">30+</span>
+    <span style="--c:rgba(16,53,66,.28)">gusts</span>
+  </div>
+  {detail && (
+    <>
+      <dl class="facts" data-facts></dl>
+      <div class="days" data-daily></div>
+    </>
+  )}
+</section>
+
+<script>
+  const COLORS = ['--w0', '--w1', '--w2', '--w3', '--w4', '--w5'];
+  const band = (kt: number) => (kt < 10 ? 0 : kt < 15 ? 1 : kt < 20 ? 2 : kt < 25 ? 3 : kt < 30 ? 4 : 5);
+  const color = (kt: number) => `var(${COLORS[band(kt)]})`;
+  const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const compass = (deg: number) => DIRS[Math.round(deg / 22.5) % 16];
+  const r = Math.round;
+
+  async function render(el: HTMLElement) {
+    const { lat, lon, tz, days, detail } = el.dataset;
+    const q = new URLSearchParams({
+      latitude: lat!, longitude: lon!, timezone: tz!, forecast_days: String(days),
+      wind_speed_unit: 'kn',
+      current: 'wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m',
+      hourly: 'wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day',
+      daily: 'wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,sunrise,sunset',
+    });
+    const $ = (s: string) => el.querySelector<HTMLElement>(s)!;
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?${q}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const d = await res.json();
+      const c = d.current, h = d.hourly;
+
+      $('[data-now]').innerHTML = `${r(c.wind_speed_10m)}<small>kn</small>`;
+      $('[data-now]').style.color = color(c.wind_speed_10m);
+      $('[data-meta]').innerHTML =
+        `<strong>Right now:</strong> ${compass(c.wind_direction_10m)}, gusting ${r(c.wind_gusts_10m)} kn, ${r(c.temperature_2m)}°C<br>` +
+        `Model forecast for Ventana Bay, updated ${new Date(c.time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} local time`;
+
+      const max = Math.max(35, ...h.wind_gusts_10m);
+      const strip = $('[data-strip]');
+      strip.innerHTML = h.time.map((t: string, i: number) => {
+        const kt = h.wind_speed_10m[i], g = h.wind_gusts_10m[i];
+        const hr = new Date(t).toLocaleTimeString([], { weekday: 'short', hour: 'numeric' });
+        return `<div class="bar${h.is_day[i] ? '' : ' night'}" style="color:${color(kt)}" title="${hr}: ${r(kt)} kn ${compass(h.wind_direction_10m[i])}, gusts ${r(g)}">` +
+          `<i class="gust" style="height:${((g - kt) / max) * 100}%;--i:${i}"></i>` +
+          `<i class="mean" style="height:${(kt / max) * 100}%;--i:${i}"></i></div>`;
+      }).join('');
+      const daily = d.daily;
+      strip.setAttribute('aria-label', 'Hourly wind forecast. ' + daily.time.map((t: string, i: number) =>
+        `${new Date(t + 'T12:00').toLocaleDateString([], { weekday: 'long' })}: up to ${r(daily.wind_speed_10m_max[i])} knots from the ${compass(daily.wind_direction_10m_dominant[i])}`).join('. '));
+      $('[data-days-row]').innerHTML = daily.time.map((t: string) =>
+        `<span>${new Date(t + 'T12:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</span>`).join('');
+
+      if (detail) {
+        $('[data-daily]').innerHTML = daily.time.map((t: string, i: number) => {
+          const kt = daily.wind_speed_10m_max[i];
+          return `<div class="day" style="--c:${color(kt)}"><b>${new Date(t + 'T12:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</b>` +
+            `<span class="kt">${r(kt)}</span> kn max<br>gusts ${r(daily.wind_gusts_10m_max[i])}, mostly ${compass(daily.wind_direction_10m_dominant[i])}</div>`;
+        }).join('');
+        const time = (s: string) => new Date(s).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        let water = '';
+        try {
+          const m = await (await fetch(`https://marine-api.open-meteo.com/v1/marine?${new URLSearchParams({
+            latitude: lat!, longitude: lon!, timezone: tz!, current: 'sea_surface_temperature,wave_height' })}`)).json();
+          water = `<div><dt>Water</dt><dd>${r(m.current.sea_surface_temperature)}°C</dd></div>` +
+            `<div><dt>Waves</dt><dd>${m.current.wave_height.toFixed(1)} m</dd></div>`;
+        } catch { /* marine data is optional */ }
+        $('[data-facts]').innerHTML = water +
+          `<div><dt>Sunrise today</dt><dd>${time(daily.sunrise[0])}</dd></div>` +
+          `<div><dt>Sunset today</dt><dd>${time(daily.sunset[0])}</dd></div>`;
+      }
+    } catch (e) {
+      $('[data-meta]').innerHTML = `<span class="wind-error">The forecast didn't load. Reload the page, or check <a href="https://open-meteo.com/">Open-Meteo</a> directly.</span>`;
+    }
+  }
+  document.querySelectorAll<HTMLElement>('[data-wind]').forEach(render);
+</script>
